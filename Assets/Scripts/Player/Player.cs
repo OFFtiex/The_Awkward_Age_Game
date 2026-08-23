@@ -44,7 +44,6 @@ public class Player : MonoBehaviour
     public Sprite babySprite;
     public Sprite midAgeSprite;
     public Sprite dedSprite;
-    
 
     [Header("Box")]
     private float Box_radius = 1f;

@@ -1,16 +1,9 @@
 using UnityEngine;
 
-public class AgeState : MonoBehaviour
+public readonly struct AgeStats
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public float maxSpeed { get; }
+    public float jumpForce { get; }
+    public float jumpLimit { get; }
+    public float smoothing { get; }
 }
