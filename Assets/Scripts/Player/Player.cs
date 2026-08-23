@@ -1,7 +1,6 @@
-using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine;
 using System.Collections;
 
 public enum AgeState    {   Baby, MidAge, Ded   }
@@ -116,15 +115,6 @@ public class Player : MonoBehaviour
 
     public GameObject PP;
 
-    #region Pressed Buttons
-    private bool jumpPressed;
-    private bool rKeyPressed;
-    private bool dKeyPressed;
-    private bool aKeyPressed;
-    private bool eKeyPressed;
-    private bool eKeyHeld;
-    #endregion
-
     //                                              Unity functions
 
 
@@ -154,7 +144,7 @@ public class Player : MonoBehaviour
     }
     void Update()
     {
-        GatherInput();
+        PlayerInput.GatherInput();
 
         // Непроверенное
         // Fliping the sprite
@@ -174,21 +164,19 @@ public class Player : MonoBehaviour
                 isUmbrella = false;
             }
             Player_body.mass = 1f;
-            if (rKeyPressed && isUmbrella == false && Is_Grounded == false)
+            if (PlayerInput.RKeyPressed && isUmbrella == false && Is_Grounded == false)
             {
                 Player_body.gravityScale = 0.1f;
                 Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, 0.3f);
                 isUmbrella = true;
             }
-            
-            else if ((rKeyPressed && isUmbrella == true) && (Is_Grounded == false))
+            else if ((PlayerInput.RKeyPressed && isUmbrella == true) && (Is_Grounded == false))
             {
                 Player_body.gravityScale = 1f;
                 isUmbrella = false;
             }
-            if (Is_near_to_Lever == true && eKeyPressed)
+            if (Is_near_to_Lever == true && PlayerInput.EKeyPressed)
             {
-                eKeyPressed = true;
                 
                 if (children[2] != null)
                 {
@@ -197,7 +185,6 @@ public class Player : MonoBehaviour
             }
             if (Is_near_to_Lever == false)
             {
-                eKeyPressed = false;
                 Player_model.flipX = false;
             }
             
@@ -215,7 +202,7 @@ public class Player : MonoBehaviour
         {
             if (PP != null) { PP.SetActive(true); }
             RemainingJumps = _jumpLimit;
-            if (jumpPressed)
+            if (PlayerInput.JumpPressed)
             {
                 Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, jumpForce);
                 PlaySFX(Jump_Clip);
@@ -227,7 +214,7 @@ public class Player : MonoBehaviour
         }
         if ((RemainingJumps != 0) && (Is_Grounded == false))
         {
-            if (jumpPressed)
+            if (PlayerInput.JumpPressed)
             {
                 Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, jumpForce);
                 PlaySFX(Jump_Clip);
@@ -241,7 +228,7 @@ public class Player : MonoBehaviour
             {
                 return;
             }
-            if (eKeyHeld)
+            if (PlayerInput.EKeyHeld)
             {
                 if (Box_Check.transform.position.x < BB.transform.position.x)
                 {
@@ -265,8 +252,8 @@ public class Player : MonoBehaviour
     {
         // Moving
         targetInput = 0f;
-        if (dKeyPressed) targetInput = 1f;
-        if (aKeyPressed) targetInput = -1f;
+        if (PlayerInput.DKeyPressed) targetInput = 1f;
+        if (PlayerInput.AKeyPressed) targetInput = -1f;
 
         SetAnimation(targetInput);
         smoothedInput = Mathf.MoveTowards(smoothedInput, targetInput, smoothing * Time.deltaTime);
@@ -319,18 +306,6 @@ public class Player : MonoBehaviour
     //                                              Custom functions
 
 
-    private void GatherInput()
-    {
-        if (Keyboard.current == null) return;
-
-        jumpPressed = Keyboard.current.spaceKey.wasPressedThisFrame;
-        rKeyPressed = Keyboard.current.rKey.wasPressedThisFrame;
-        dKeyPressed = Keyboard.current.dKey.wasPressedThisFrame;
-        aKeyPressed = Keyboard.current.aKey.wasPressedThisFrame;
-        eKeyPressed = Keyboard.current.eKey.wasPressedThisFrame;
-        eKeyHeld = Keyboard.current.eKey.isPressed;
-    }
-
     private void SetAnimation(float targetInput)
     {
         string age = CurrentAge switch
@@ -340,7 +315,7 @@ public class Player : MonoBehaviour
             _ => "Parent"
         };
 
-        string animName = (Is_Grounded, targetInput == 0, Player_body.linearVelocityY > 0, isUmbrella, eKeyPressed) switch
+        string animName = (Is_Grounded, targetInput == 0, Player_body.linearVelocityY > 0, isUmbrella, PlayerInput.EKeyHeld) switch
         {
             (false, _, false, false, false)  => $"{age}_Fall_Animation",
             (false, _, false, true, false)   => $"{age}_Umbrella_Animation",
