@@ -9,26 +9,26 @@ public class Player : MonoBehaviour
 {
     [Header("Player_Movement")]
     public Rigidbody2D Player_body;
-    public float maxSpeed => CurrentAge switch
+    public float MaxSpeed => CurrentAge switch
     {
         AgeState.Baby => 5.0f,
         AgeState.MidAge => 5.0f,
         AgeState.Ded => 3f,
         _ => 3.0f
     };
-    public float jumpForce => CurrentAge switch
+    public float JumpForce => CurrentAge switch
     {
         AgeState.Baby => 6.8f,
         AgeState.MidAge => 8f,
         AgeState.Ded => 3f,
         _ => 2.0f
     };
-    private int _jumpLimit => CurrentAge switch
+    private int JumpLimit => CurrentAge switch
     {
         AgeState.Baby => 1, 
         _ => 0 
     };
-    public float smoothing => CurrentAge switch
+    public float Smoothing => CurrentAge switch
     {
         AgeState.Baby => 2.0f,
         AgeState.MidAge => 10.0f,
@@ -103,7 +103,7 @@ public class Player : MonoBehaviour
     }
 
     [Header("Colliders")]
-    public CapsuleCollider2D playerCollider => cachedCollider;
+    public CapsuleCollider2D PlayerCollider => cachedCollider;
     private CapsuleCollider2D cachedCollider;
     private Vector2 babyOffset;
     private Vector2 babySize;
@@ -200,10 +200,10 @@ public class Player : MonoBehaviour
         if (Is_Grounded)
         {
             if (PP != null) { PP.SetActive(true); }
-            RemainingJumps = _jumpLimit;
+            RemainingJumps = JumpLimit;
             if (PlayerInput.JumpPressed)
             {
-                Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, jumpForce);
+                Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, JumpForce);
                 PlaySFX(Jump_Clip);
             }
         }
@@ -215,7 +215,7 @@ public class Player : MonoBehaviour
         {
             if (PlayerInput.JumpPressed)
             {
-                Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, jumpForce);
+                Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, JumpForce);
                 PlaySFX(Jump_Clip);
                 RemainingJumps -= 1;
             }
@@ -255,8 +255,8 @@ public class Player : MonoBehaviour
         if (PlayerInput.AKeyPressed) targetInput = -1f;
 
         SetAnimation(targetInput);
-        smoothedInput = Mathf.MoveTowards(smoothedInput, targetInput, smoothing * Time.deltaTime);
-        Player_body.linearVelocity = new Vector2(maxSpeed * smoothedInput, Player_body.linearVelocity.y);
+        smoothedInput = Mathf.MoveTowards(smoothedInput, targetInput, Smoothing * Time.deltaTime);
+        Player_body.linearVelocity = new Vector2(MaxSpeed * smoothedInput, Player_body.linearVelocity.y);
         Is_Grounded = Physics2D.OverlapCircle(Ground_Check.position, Ground_radius, Ground_Layer);
 
         // Непроверенное
