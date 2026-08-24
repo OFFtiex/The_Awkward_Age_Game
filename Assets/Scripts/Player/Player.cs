@@ -7,67 +7,46 @@ public enum AgeState    {   Baby, MidAge, Ded   }
 
 public class Player : MonoBehaviour
 {
-    [Header("Player_Movement")]
-    public Rigidbody2D Player_body;
-    public float MaxSpeed => CurrentAge switch
-    {
-        AgeState.Baby => 5.0f,
-        AgeState.MidAge => 5.0f,
-        AgeState.Ded => 3f,
-        _ => 3.0f
-    };
-    public float JumpForce => CurrentAge switch
-    {
-        AgeState.Baby => 6.8f,
-        AgeState.MidAge => 8f,
-        AgeState.Ded => 3f,
-        _ => 2.0f
-    };
-    private int JumpLimit => CurrentAge switch
-    {
-        AgeState.Baby => 1, 
-        _ => 0 
-    };
-    public float Smoothing => CurrentAge switch
-    {
-        AgeState.Baby => 2.0f,
-        AgeState.MidAge => 10.0f,
-        AgeState.Ded => 4f,
-        _ => 2.0f
-    };
+    private Rigidbody2D Player_body;
+
+    [Header("Player Movement")]
+    public float JumpForce { get; private set; }
+    public float Smoothing { get; private set; }
+    public float MaxSpeed { get; private set; }
+    public int JumpLimit { get; private set; }
 
     private float smoothedInput;
-    float targetInput = 0f;
+    public int RemainingJumps;
+    float targetInput;
 
-    [Header("Sprite_Render")]
-    private SpriteRenderer Player_model;
-    public Sprite babySprite;
-    public Sprite midAgeSprite;
-    public Sprite dedSprite;
+    [Header("Sprite Render")]
+    [SerializeField] private Sprite _babySprite;
+    [SerializeField] private Sprite _midAgeSprite;
+    [SerializeField] private Sprite _dedSprite;
+    private SpriteRenderer PlayerModel;
 
     [Header("Box")]
-    private float Box_radius = 1f;
+    private readonly float Box_radius = 1f;
     public LayerMask Box_Layer;
     private bool Is_near_to_Box;
     public Transform Box_Check;
     public GameObject BB;
 
     [Header("Ground")]
-    private float Ground_radius = 0.2f;
+    private readonly float Ground_radius = 0.2f;
     public LayerMask Ground_Layer;
     private bool Is_Grounded;
     public Transform Ground_Check;
 
-    [Header("Player_characteristics")]
-    private Animator animator;
-    public int RemainingJumps;
+    [Header("Player characteristics")]
+    private Animator animator;    
 
     private bool isDead;
-    public bool isFlip; 
+    //public bool isFlip; 
     
     private bool isUmbrella;
 
-    [Header("Player_additional")]
+    [Header("Player additional")]
     [SerializeField] private ParticleSystem walking_particles;
     [SerializeField] private ParticleSystem Death_particles;
     private ParticleSystem Death_particles_Instance;
@@ -108,7 +87,7 @@ public class Player : MonoBehaviour
     private Vector2 babyOffset;
     private Vector2 babySize;
 
-    [Header ("UI_Elements")]
+    [Header ("UI Elements")]
     [SerializeField] private Image F_Image;
     [SerializeField] private float Current_Alpha_Value = 1;
 
@@ -125,7 +104,7 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         F_Image = GameObject.FindWithTag("Fading_Screen").GetComponent<Image>();
         Player_body = GetComponent<Rigidbody2D>();
-        Player_model = GetComponent<SpriteRenderer>();
+        PlayerModel = GetComponent<SpriteRenderer>();
         F_Image.color = new Color(0, 0, 0, 1);
         BB = GameObject.FindWithTag("Box");
         LL = GameObject.FindWithTag("Lever");
@@ -149,11 +128,11 @@ public class Player : MonoBehaviour
         // Fliping the sprite
         if (targetInput < 0f)
         {
-            Player_model.flipX = true;
+            PlayerModel.flipX = true;
         }
         else
         {
-            Player_model.flipX = false;
+            PlayerModel.flipX = false;
         }
         if ((CurrentAge == AgeState.Ded)  ) // Umbrella_falling_and_Lever_activating
         {
@@ -184,7 +163,7 @@ public class Player : MonoBehaviour
             }
             if (Is_near_to_Lever == false)
             {
-                Player_model.flipX = false;
+                PlayerModel.flipX = false;
             }
             
         }
@@ -355,12 +334,12 @@ public class Player : MonoBehaviour
     private void UpdatePlayerVisual()
     {
 
-        Player_model.sprite = ageState switch
+        PlayerModel.sprite = ageState switch
         {
-            AgeState.Baby => babySprite,
-            AgeState.MidAge => midAgeSprite,
-            AgeState.Ded => dedSprite,
-            _ => Player_model.sprite
+            AgeState.Baby => _babySprite,
+            AgeState.MidAge => _midAgeSprite,
+            AgeState.Ded => _dedSprite,
+            _ => PlayerModel.sprite
         };
     }
 
@@ -392,7 +371,7 @@ public class Player : MonoBehaviour
         
         Invoke("LoadSceneDelay", 1f);
 
-        Player_model.enabled = false;
+        PlayerModel.enabled = false;
         cachedCollider.enabled = false;
         if (TryGetComponent<Rigidbody2D>(out var rb)) rb.simulated = false;
     }
