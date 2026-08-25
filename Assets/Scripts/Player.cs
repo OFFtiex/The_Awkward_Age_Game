@@ -229,6 +229,9 @@ public class Player : MonoBehaviour
         {
             if (PP != null) { PP.SetActive(false); }
         }
+        if (Player_body.linearVelocity.y < 0) Player_body.gravityScale = 1.2f;   // Increase gravity scale when player is falling 
+        else Player_body.gravityScale = 1f;                                      // (Makes jump and fall look better)
+
         if ((ExtraJump != 0) && (Is_Grounded == false))
         {
             if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
