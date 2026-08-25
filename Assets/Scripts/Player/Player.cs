@@ -19,11 +19,17 @@ public class Player : MonoBehaviour
     public int RemainingJumps;
     float targetInput;
 
+    [Header("Feature sets")]
+    private AgeStats _youthStats;
+    private AgeStats _primeStats;
+    private AgeStats _agingStats;
+
     [Header("Sprite Render")]
     [SerializeField] private Sprite _babySprite;
     [SerializeField] private Sprite _midAgeSprite;
     [SerializeField] private Sprite _dedSprite;
     private SpriteRenderer PlayerModel;
+    private Animator animator;
 
     [Header("Box")]
     private readonly float Box_radius = 1f;
@@ -38,9 +44,7 @@ public class Player : MonoBehaviour
     private bool Is_Grounded;
     public Transform Ground_Check;
 
-    [Header("Player characteristics")]
-    private Animator animator;    
-
+    [Header("Player characteristics")]   
     private bool isDead;
     //public bool isFlip; 
     
@@ -96,7 +100,14 @@ public class Player : MonoBehaviour
     //                                              Unity functions
 
 
-    private void Awake() { Resume(); this.enabled = true; }
+    private void Awake() 
+    {
+        Resume(); this.enabled = true;
+
+        _youthStats = new AgeStats(5f, 6.8f, 2, 50f, _babySprite,   new Vector2(0.8f, 1.2f), new Vector2(0f, 0f));
+        _primeStats = new AgeStats(5f, 8f,   1, 10f, _midAgeSprite, new Vector2(1.0f, 1.8f), new Vector2(0f, 0.1f));
+        _agingStats = new AgeStats(3f, 3f,   1, 3f,  _dedSprite,    new Vector2(0.9f, 1.5f), new Vector2(0f, -0.1f));
+    }
 
     void Start()
     {
