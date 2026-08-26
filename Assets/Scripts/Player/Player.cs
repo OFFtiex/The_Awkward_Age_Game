@@ -1,9 +1,12 @@
+using System.Collections;
+using Unity.VisualScripting;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine;
-using System.Collections;
 
-public enum AgeState    {   Baby, MidAge, Ded   }
+public enum AgeState    {   Youth, Prime, Aging   }
 
 public class Player : MonoBehaviour
 {
@@ -25,46 +28,55 @@ public class Player : MonoBehaviour
     private AgeStats _agingStats;
 
     [Header("Sprite Render")]
-    [SerializeField] private Sprite _babySprite;
-    [SerializeField] private Sprite _midAgeSprite;
-    [SerializeField] private Sprite _dedSprite;
+    [SerializeField] private Sprite _youthSprite;
+    [SerializeField] private Sprite _primeSprite;
+    [SerializeField] private Sprite _agingSprite;
     private SpriteRenderer PlayerModel;
     private Animator animator;
 
-    [Header("Box")]
+    [Header("Box")]//Чинить
     private readonly float Box_radius = 1f;
-    public LayerMask Box_Layer;
+    [SerializeField] private LayerMask Box_Layer;
     private bool Is_near_to_Box;
-    public Transform Box_Check;
-    public GameObject BB;
+    [SerializeField] private Transform Box_Check;
+    [SerializeField] private GameObject BB;
 
     [Header("Ground")]
-    private readonly float Ground_radius = 0.2f;
-    public LayerMask Ground_Layer;
-    private bool Is_Grounded;
-    public Transform Ground_Check;
-
-    [Header("Player characteristics")]   
-    private bool isDead;
-    //public bool isFlip; 
-    
-    private bool isUmbrella;
+    [SerializeField] private Transform _groundCheck;
+    [SerializeField] private LayerMask _groundLayer;
+    private readonly float _groundRadius = 0.2f;
+    private bool _isGrounded;
 
     [Header("Player additional")]
     [SerializeField] private ParticleSystem walking_particles;
     [SerializeField] private ParticleSystem Death_particles;
-    private ParticleSystem Death_particles_Instance;
+    [SerializeField] private ParticleSystem Death_particles_Instance;
+    public AgeState CurrentAge
+    {
+        get { return _currentAge; }
+        set
+        {
+            if (_currentAge == value) return;
+            _currentAge = value;
+            UpdateColliderParameters();
+            UpdatePlayerVisual();
+            UpdatePlayerCharacteristics();
+        }
+    }
+    private bool _isUmbrella;
+    private bool _isDead;
+    private AgeState _currentAge;
 
-
+    //public bool isFlip; 
 
     [Header("SFX")]
-    private AudioSource audio_source;
-    public AudioClip Jump_Clip;
-    public AudioClip Watch_Clip;
-    public AudioClip Death_Clip_Young;
-    public AudioClip Death_Clip_Old;
+    [SerializeField] private AudioClip Jump_Clip;
+    [SerializeField] private AudioClip Watch_Clip;
+    [SerializeField] private AudioClip Death_Clip_Young;
+    [SerializeField] private AudioClip Death_Clip_Old;
+    [SerializeField] private AudioSource audio_source;
 
-    [Header("Lever")]
+    [Header("Lever")]//Чинить
     public float Lever_radius = 2f;
     public bool Is_near_to_Lever = false;
     public LayerMask Lever_Layer;
@@ -72,24 +84,11 @@ public class Player : MonoBehaviour
     public GameObject LL;
     public Transform[] children;
 
-    [SerializeField] private AgeState ageState;
-    public AgeState CurrentAge
-    {
-        get => ageState;
-        set
-        {
-            if (ageState == value) return;
-            ageState = value;
-            UpdateColliderParameters();
-            UpdatePlayerVisual();
-        }
-    }
-
     [Header("Colliders")]
-    public CapsuleCollider2D PlayerCollider => cachedCollider;
-    private CapsuleCollider2D cachedCollider;
-    private Vector2 babyOffset;
-    private Vector2 babySize;
+    //public CapsuleCollider2D PlayerCollider => _cachedCollider;
+    private CapsuleCollider2D _cachedCollider;
+    private Vector2 _youthOffset;
+    private Vector2 _youthSize;
 
     [Header ("UI Elements")]
     [SerializeField] private Image F_Image;
@@ -104,9 +103,9 @@ public class Player : MonoBehaviour
     {
         Resume(); this.enabled = true;
 
-        _youthStats = new AgeStats(5f, 6.8f, 2, 50f, _babySprite,   new Vector2(0.8f, 1.2f), new Vector2(0f, 0f));
-        _primeStats = new AgeStats(5f, 8f,   1, 10f, _midAgeSprite, new Vector2(1.0f, 1.8f), new Vector2(0f, 0.1f));
-        _agingStats = new AgeStats(3f, 3f,   1, 3f,  _dedSprite,    new Vector2(0.9f, 1.5f), new Vector2(0f, -0.1f));
+        _youthStats = new AgeStats(5f, 6.8f, 2, 50f, _youthSprite,   new Vector2(0.8f, 1.2f), new Vector2(0f, 0f));
+        _primeStats = new AgeStats(5f, 8f,   1, 10f, _primeSprite, new Vector2(1.0f, 1.8f), new Vector2(0f, 0.1f));
+        _agingStats = new AgeStats(3f, 3f,   1, 3f,  _agingSprite,    new Vector2(0.9f, 1.5f), new Vector2(0f, -0.1f));
     }
 
     void Start()
@@ -120,13 +119,14 @@ public class Player : MonoBehaviour
         BB = GameObject.FindWithTag("Box");
         LL = GameObject.FindWithTag("Lever");
         PP = GameObject.FindWithTag("Particles_Walk");
+        CurrentAge = AgeState.Youth;
 
 
-        cachedCollider = GetComponent<CapsuleCollider2D>();
-        if (cachedCollider != null)
+        _cachedCollider = GetComponent<CapsuleCollider2D>();
+        if (_cachedCollider != null)
         {
-            babySize = cachedCollider.size;
-            babyOffset = cachedCollider.offset;
+            _youthSize = _cachedCollider.size;
+            _youthOffset = _cachedCollider.offset;
     
             UpdateColliderParameters();
         }
@@ -145,24 +145,24 @@ public class Player : MonoBehaviour
         {
             PlayerModel.flipX = false;
         }
-        if ((CurrentAge == AgeState.Ded)  ) // Umbrella_falling_and_Lever_activating
+        if ((CurrentAge == AgeState.Aging)  ) // Umbrella_falling_and_Lever_activating
         {
-            if ((Is_Grounded == true))
+            if ((_isGrounded == true))
             {
                 Player_body.gravityScale = 1f;
-                isUmbrella = false;
+                _isUmbrella = false;
             }
             Player_body.mass = 1f;
-            if (PlayerInput.RKeyPressed && isUmbrella == false && Is_Grounded == false)
+            if (PlayerInput.RKeyPressed && _isUmbrella == false && _isGrounded == false)
             {
                 Player_body.gravityScale = 0.1f;
                 Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, 0.3f);
-                isUmbrella = true;
+                _isUmbrella = true;
             }
-            else if ((PlayerInput.RKeyPressed && isUmbrella == true) && (Is_Grounded == false))
+            else if ((PlayerInput.RKeyPressed && _isUmbrella == true) && (_isGrounded == false))
             {
                 Player_body.gravityScale = 1f;
-                isUmbrella = false;
+                _isUmbrella = false;
             }
             if (Is_near_to_Lever == true && PlayerInput.EKeyPressed)
             {
@@ -178,16 +178,16 @@ public class Player : MonoBehaviour
             }
             
         }
-        if ((CurrentAge == AgeState.MidAge) || (CurrentAge == AgeState.Ded))
+        if ((CurrentAge == AgeState.Prime) || (CurrentAge == AgeState.Aging))
         {
             RemainingJumps = 0;
             
         }
-        if ((CurrentAge == AgeState.Baby))
+        if ((CurrentAge == AgeState.Youth))
         {
             Player_body.mass = 1f;
         }
-        if (Is_Grounded)
+        if (_isGrounded)
         {
             if (PP != null) { PP.SetActive(true); }
             RemainingJumps = JumpLimit;
@@ -201,7 +201,7 @@ public class Player : MonoBehaviour
         {
             if (PP != null) { PP.SetActive(false); }
         }
-        if ((RemainingJumps != 0) && (Is_Grounded == false))
+        if ((RemainingJumps != 0) && (_isGrounded == false))
         {
             if (PlayerInput.JumpPressed)
             {
@@ -210,7 +210,7 @@ public class Player : MonoBehaviour
                 RemainingJumps -= 1;
             }
         }
-        if (Is_near_to_Box  && CurrentAge == AgeState.MidAge) 
+        if (Is_near_to_Box  && CurrentAge == AgeState.Prime) 
         {
             Player_body.mass = 1000f;
             if ((Box_Check.transform.position.y > BB.transform.position.y + 1))
@@ -247,18 +247,18 @@ public class Player : MonoBehaviour
         SetAnimation(targetInput);
         smoothedInput = Mathf.MoveTowards(smoothedInput, targetInput, Smoothing * Time.deltaTime);
         Player_body.linearVelocity = new Vector2(MaxSpeed * smoothedInput, Player_body.linearVelocity.y);
-        Is_Grounded = Physics2D.OverlapCircle(Ground_Check.position, Ground_radius, Ground_Layer);
+        _isGrounded = Physics2D.OverlapCircle(_groundCheck.position, _groundRadius, _groundLayer);
 
         // Непроверенное
         Is_near_to_Lever = Physics2D.OverlapCircle(Lever_Check.position, Lever_radius, Lever_Layer);
         Is_near_to_Box = Physics2D.OverlapCircle(Box_Check.position, Box_radius, Box_Layer);
 
-        if (F_Image.color.a != 0 && isDead == false)
+        if (F_Image.color.a != 0 && _isDead == false)
         {
             Current_Alpha_Value -=  Time.deltaTime;
             F_Image.color = new Color(0, 0, 0, Current_Alpha_Value);
         }
-        else if (isDead == true )
+        else if (_isDead == true )
         {
             Current_Alpha_Value += Time.deltaTime *10f;
             F_Image.color = new Color(0, 0, 0, Current_Alpha_Value);
@@ -299,12 +299,12 @@ public class Player : MonoBehaviour
     {
         string age = CurrentAge switch
         {
-            AgeState.Baby => "Kid",
-            AgeState.Ded => "Ded",
+            AgeState.Youth => "Kid",
+            AgeState.Aging => "Ded",
             _ => "Parent"
         };
 
-        string animName = (Is_Grounded, targetInput == 0, Player_body.linearVelocityY > 0, isUmbrella, PlayerInput.EKeyHeld) switch
+        string animName = (_isGrounded, targetInput == 0, Player_body.linearVelocityY > 0, _isUmbrella, PlayerInput.EKeyHeld) switch
         {
             (false, _, false, false, false)  => $"{age}_Fall_Animation",
             (false, _, false, true, false)   => $"{age}_Umbrella_Animation",
@@ -320,43 +320,58 @@ public class Player : MonoBehaviour
 
     private void UpdateColliderParameters() 
     {
-        if (cachedCollider == null) return;
+        if (_cachedCollider == null) return;
 
-        switch (ageState)
+        switch (CurrentAge)
         {
-            case AgeState.Baby:
-                cachedCollider.size = babySize;
-                cachedCollider.offset = babyOffset;
+            case AgeState.Youth:
+                _cachedCollider.size = _youthSize;
+                _cachedCollider.offset = _youthOffset;
                 break;
 
-            case AgeState.MidAge:
-                float midHeight = babySize.y * 1.2f;
-                cachedCollider.size = new Vector2(babySize.x, midHeight);
-                cachedCollider.offset = new Vector2(babyOffset.x, babyOffset.y -0.30f );
+            case AgeState.Prime:
+                float midHeight = _youthSize.y * 1.2f;
+                _cachedCollider.size = new Vector2(_youthSize.x, midHeight);
+                _cachedCollider.offset = new Vector2(_youthOffset.x, _youthOffset.y -0.30f );
                 break;
 
-            case AgeState.Ded:
-                float dedHeight = babySize.y * 1.2f;
-                cachedCollider.size = new Vector2(babySize.x, dedHeight);
-                cachedCollider.offset = new Vector2(babyOffset.x, babyOffset.y - (dedHeight - babySize.y) / 2f);
+            case AgeState.Aging:
+                float agingHeight = _youthSize.y * 1.2f;
+                _cachedCollider.size = new Vector2(_youthSize.x, agingHeight);
+                _cachedCollider.offset = new Vector2(_youthOffset.x, _youthOffset.y - (agingHeight - _youthSize.y) / 2f);
                 break;
         }
     }
     private void UpdatePlayerVisual()
     {
 
-        PlayerModel.sprite = ageState switch
+        PlayerModel.sprite = CurrentAge switch
         {
-            AgeState.Baby => _babySprite,
-            AgeState.MidAge => _midAgeSprite,
-            AgeState.Ded => _dedSprite,
+            AgeState.Youth => _youthSprite,
+            AgeState.Prime => _primeSprite,
+            AgeState.Aging => _agingSprite,
             _ => PlayerModel.sprite
         };
+    }
+    private void UpdatePlayerCharacteristics() 
+    {
+        AgeStats selectedStats = CurrentAge switch
+        {
+            AgeState.Youth => _youthStats,
+            AgeState.Prime => _primeStats,
+            AgeState.Aging => _agingStats,
+            _ => _youthStats
+        };
+
+        MaxSpeed = selectedStats.MaxSpeed;
+        JumpForce = selectedStats.JumpForce;
+        JumpLimit = selectedStats.JumpLimit;
+        Smoothing = selectedStats.Smoothing;
     }
 
     public void DeathSound()
     {
-        if ((CurrentAge == AgeState.MidAge) || (CurrentAge == AgeState.Ded))
+        if ((CurrentAge == AgeState.Prime) || (CurrentAge == AgeState.Aging))
         {
             PlaySFX(Death_Clip_Old);
         }
@@ -368,7 +383,7 @@ public class Player : MonoBehaviour
 
     public void Kill(string cause = "Curiosity")
     {
-        if (isDead) return;
+        if (_isDead) return;
 
         Debug.Log($"Entity was killed by: {cause}");
         Die();
@@ -376,14 +391,14 @@ public class Player : MonoBehaviour
 
     private void Die()
     {
-        isDead = true;
+        _isDead = true;
         DeathSound();
-        Death_particles_Instance = Instantiate(Death_particles, Ground_Check.transform.position, Quaternion.identity);
+        Death_particles_Instance = Instantiate(Death_particles, _groundCheck.transform.position, Quaternion.identity);
         
         Invoke("LoadSceneDelay", 1f);
 
         PlayerModel.enabled = false;
-        cachedCollider.enabled = false;
+        _cachedCollider.enabled = false;
         if (TryGetComponent<Rigidbody2D>(out var rb)) rb.simulated = false;
     }
     // <<< Переделать корутинами

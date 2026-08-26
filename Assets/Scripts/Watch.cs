@@ -33,12 +33,11 @@ public class Watch : MonoBehaviour
     {
         // You touch the clock and you become older
         
-        
         player.CurrentAge = player.CurrentAge switch
         {
-            AgeState.Baby   => AgeState.MidAge,
-            AgeState.MidAge => AgeState.Ded,
-            AgeState.Ded    => HandleDeath(player, "Senescence"),
+            AgeState.Youth => AgeState.Prime,
+            AgeState.Prime => AgeState.Aging,
+            AgeState.Aging => HandleDeath(player, "Senescence"),
             _ => player.CurrentAge
         };
     }
@@ -49,9 +48,9 @@ public class Watch : MonoBehaviour
        
         player.CurrentAge = player.CurrentAge switch
         {
-            AgeState.Ded    => AgeState.MidAge,
-            AgeState.MidAge => AgeState.Baby,
-            AgeState.Baby   => HandleDeath(player, "Chronological Regression"),
+            AgeState.Aging => AgeState.Prime,
+            AgeState.Prime => AgeState.Youth,
+            AgeState.Youth => HandleDeath(player, "Chronological Regression"),
             _ => player.CurrentAge
         };
     }
