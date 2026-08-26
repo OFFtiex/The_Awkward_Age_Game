@@ -51,21 +51,30 @@ public class Player : MonoBehaviour
     [SerializeField] private ParticleSystem walking_particles;
     [SerializeField] private ParticleSystem Death_particles;
     [SerializeField] private ParticleSystem Death_particles_Instance;
+    private AgeState _currentAge;
+    private AgeStats _selectedStats => _currentAge switch
+    {
+        AgeState.Prime => _primeStats,
+        AgeState.Aging => _agingStats,
+        _ => _youthStats
+    };
     public AgeState CurrentAge
     {
-        get { return _currentAge; }
+        get => _currentAge;
         set
         {
             if (_currentAge == value) return;
             _currentAge = value;
-            UpdateColliderParameters();
+
+            UpdatePlayerCollider();
             UpdatePlayerVisual();
             UpdatePlayerCharacteristics();
         }
     }
+
     private bool _isUmbrella;
     private bool _isDead;
-    private AgeState _currentAge;
+    
 
     //public bool isFlip; 
 
@@ -103,9 +112,10 @@ public class Player : MonoBehaviour
     {
         Resume(); this.enabled = true;
 
-        _youthStats = new AgeStats(5f, 6.8f, 2, 50f, _youthSprite,   new Vector2(0.8f, 1.2f), new Vector2(0f, 0f));
-        _primeStats = new AgeStats(5f, 8f,   1, 10f, _primeSprite, new Vector2(1.0f, 1.8f), new Vector2(0f, 0.1f));
-        _agingStats = new AgeStats(3f, 3f,   1, 3f,  _agingSprite,    new Vector2(0.9f, 1.5f), new Vector2(0f, -0.1f));
+        _youthStats = new AgeStats(5f, 6.8f, 2, 50f, _youthSprite, new Vector2(0.78f, 0.95f), new Vector2(-0.11f, -0.02f));
+        _primeStats = new AgeStats(5f, 8f, 1, 10f, _primeSprite, new Vector2(1.0f, 1.8f), new Vector2(0f, 0.1f));
+        _agingStats = new AgeStats(3f, 3f, 1, 3f, _agingSprite, new Vector2(0.9f, 1.5f), new Vector2(0f, -0.1f));
+
     }
 
     void Start()
@@ -127,8 +137,8 @@ public class Player : MonoBehaviour
         {
             _youthSize = _cachedCollider.size;
             _youthOffset = _cachedCollider.offset;
-    
-            UpdateColliderParameters();
+
+            UpdatePlayerCollider();
         }
     }
     void Update()
@@ -317,8 +327,8 @@ public class Player : MonoBehaviour
 
         animator.Play(animName);
     }
-
-    private void UpdateColliderParameters() 
+    /*
+    private void UpdatePlayerCollider()//Поправить
     {
         if (_cachedCollider == null) return;
 
@@ -341,32 +351,22 @@ public class Player : MonoBehaviour
                 _cachedCollider.offset = new Vector2(_youthOffset.x, _youthOffset.y - (agingHeight - _youthSize.y) / 2f);
                 break;
         }
+    }*/
+    private void UpdatePlayerCollider()
+    {
+        _cachedCollider.size = _selectedStats.ColliderSize;
+        _cachedCollider.offset = _selectedStats.ColliderOffset;
     }
     private void UpdatePlayerVisual()
     {
-
-        PlayerModel.sprite = CurrentAge switch
-        {
-            AgeState.Youth => _youthSprite,
-            AgeState.Prime => _primeSprite,
-            AgeState.Aging => _agingSprite,
-            _ => PlayerModel.sprite
-        };
+        PlayerModel.sprite = _selectedStats.VisualSprite;
     }
     private void UpdatePlayerCharacteristics() 
     {
-        AgeStats selectedStats = CurrentAge switch
-        {
-            AgeState.Youth => _youthStats,
-            AgeState.Prime => _primeStats,
-            AgeState.Aging => _agingStats,
-            _ => _youthStats
-        };
-
-        MaxSpeed = selectedStats.MaxSpeed;
-        JumpForce = selectedStats.JumpForce;
-        JumpLimit = selectedStats.JumpLimit;
-        Smoothing = selectedStats.Smoothing;
+        MaxSpeed  = _selectedStats.MaxSpeed;
+        JumpForce = _selectedStats.JumpForce;
+        JumpLimit = _selectedStats.JumpLimit;
+        Smoothing = _selectedStats.Smoothing;
     }
 
     public void DeathSound()
