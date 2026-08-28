@@ -119,8 +119,8 @@ public class Player : MonoBehaviour
         audio_source = GetComponent<AudioSource>();
 
         _youthStats = new AgeStats(5f, 6.8f, 2, 50f, _youthSprite, new Vector2(0.78f, 0.95f), new Vector2(-0.11f, -0.02f));
-        _primeStats = new AgeStats(5f, 8f, 1, 10f, _primeSprite, new Vector2(1.0f, 1.8f), new Vector2(0f, 0.1f));
-        _agingStats = new AgeStats(3f, 3f, 1, 3f, _agingSprite, new Vector2(0.9f, 1.5f), new Vector2(0f, -0.1f));
+        _primeStats = new AgeStats(5f, 8f, 1, 10f, _primeSprite, new Vector2(0.9f, 1.8f), new Vector2(-0.05f, -0.08f));
+        _agingStats = new AgeStats(3f, 3f, 1, 3f, _agingSprite, new Vector2(0.9f, 1.5f), new Vector2(0f, 0f));
 
         _currentAge = AgeState.Youth;
 

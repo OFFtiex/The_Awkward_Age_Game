@@ -18,12 +18,10 @@ public class Watch : MonoBehaviour
         if (typeOfWatch == WatchType.Aging)
         {
             ApplyAging(player);
-            
         }
         else
         {
             ApplyRejuvenation(player);
-            
         }
 
         Destroy(gameObject);
@@ -58,8 +56,6 @@ public class Watch : MonoBehaviour
     private AgeState HandleDeath(Player player, string reason)
     {
         player.Kill(reason);
-        player.DeathSound();
         return player.CurrentAge;
     }
-    
 }
