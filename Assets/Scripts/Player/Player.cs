@@ -15,7 +15,8 @@ public class Player : MonoBehaviour
     [Header("Player Movement")]
     public float JumpForce { get; private set; }
     public float Smoothing { get; private set; }
-    public float MaxSpeed { get; private set; }
+    //public float MaxSpeed { get; private set; }
+    [SerializeField] private float MaxSpeed;
     public int JumpLimit { get; private set; }
 
     private float smoothedInput;
@@ -111,35 +112,33 @@ public class Player : MonoBehaviour
     private void Awake() 
     {
         Resume(); this.enabled = true;
+        Player_body = GetComponent<Rigidbody2D>();
+        _cachedCollider = GetComponent<CapsuleCollider2D>();
+        PlayerModel = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
+        audio_source = GetComponent<AudioSource>();
 
         _youthStats = new AgeStats(5f, 6.8f, 2, 50f, _youthSprite, new Vector2(0.78f, 0.95f), new Vector2(-0.11f, -0.02f));
         _primeStats = new AgeStats(5f, 8f, 1, 10f, _primeSprite, new Vector2(1.0f, 1.8f), new Vector2(0f, 0.1f));
         _agingStats = new AgeStats(3f, 3f, 1, 3f, _agingSprite, new Vector2(0.9f, 1.5f), new Vector2(0f, -0.1f));
 
+        _currentAge = AgeState.Youth;
+
+        UpdatePlayerCollider();
+        UpdatePlayerVisual();
+        UpdatePlayerCharacteristics();
     }
 
     void Start()
     {
-        audio_source = GetComponent<AudioSource>();
-        animator = GetComponent<Animator>();
         F_Image = GameObject.FindWithTag("Fading_Screen").GetComponent<Image>();
-        Player_body = GetComponent<Rigidbody2D>();
-        PlayerModel = GetComponent<SpriteRenderer>();
         F_Image.color = new Color(0, 0, 0, 1);
+
         BB = GameObject.FindWithTag("Box");
         LL = GameObject.FindWithTag("Lever");
         PP = GameObject.FindWithTag("Particles_Walk");
-        CurrentAge = AgeState.Youth;
+        //CurrentAge = AgeState.Youth;
 
-
-        _cachedCollider = GetComponent<CapsuleCollider2D>();
-        if (_cachedCollider != null)
-        {
-            _youthSize = _cachedCollider.size;
-            _youthOffset = _cachedCollider.offset;
-
-            UpdatePlayerCollider();
-        }
     }
     void Update()
     {
