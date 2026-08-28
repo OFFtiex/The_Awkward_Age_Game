@@ -4,9 +4,9 @@ public static class PlayerInput
 {
     public static bool JumpPressed { get; private set; }
     public static bool RKeyPressed { get; private set; }
-    public static bool DKeyPressed { get; private set; }
-    public static bool AKeyPressed { get; private set; }
     public static bool EKeyPressed { get; private set; }
+    public static bool DKeyHeld { get; private set; }
+    public static bool AKeyHeld { get; private set; }
     public static bool EKeyHeld { get; private set; }
 
     public static void GatherInput()
@@ -15,9 +15,9 @@ public static class PlayerInput
 
         JumpPressed = Keyboard.current.spaceKey.wasPressedThisFrame;
         RKeyPressed = Keyboard.current.rKey.wasPressedThisFrame;
-        DKeyPressed = Keyboard.current.dKey.wasPressedThisFrame;
-        AKeyPressed = Keyboard.current.aKey.wasPressedThisFrame;
         EKeyPressed = Keyboard.current.eKey.wasPressedThisFrame;
+        DKeyHeld = Keyboard.current.dKey.isPressed;
+        AKeyHeld = Keyboard.current.aKey.isPressed;
         EKeyHeld = Keyboard.current.eKey.isPressed;
     }
 }

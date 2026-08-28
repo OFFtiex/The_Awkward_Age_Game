@@ -250,8 +250,8 @@ public class Player : MonoBehaviour
     {
         // Moving
         targetInput = 0f;
-        if (PlayerInput.DKeyPressed) targetInput = 1f;
-        if (PlayerInput.AKeyPressed) targetInput = -1f;
+        if (PlayerInput.DKeyHeld) targetInput = 1f;
+        if (PlayerInput.AKeyHeld) targetInput = -1f;
 
         SetAnimation(targetInput);
         smoothedInput = Mathf.MoveTowards(smoothedInput, targetInput, Smoothing * Time.deltaTime);
