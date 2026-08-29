@@ -4,26 +4,24 @@ public class Watch : MonoBehaviour
 {
     public enum WatchType { Aging, Rejuvenating }
 
-    
     [SerializeField] private WatchType typeOfWatch;
-    
+    [SerializeField] private AudioClip Watch_Clip;
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!collision.CompareTag("Player")) return;
-
+        if (!collision.CompareTag("Player"))                    return;
         if (!collision.TryGetComponent<Player>(out var player)) return;
+        if (player == null)                                     return;
 
-        if (player == null) return;
+        player.PlaySFX(Watch_Clip);
 
         if (typeOfWatch == WatchType.Aging)
         {
             ApplyAging(player);
-            
         }
         else
         {
             ApplyRejuvenation(player);
-            
         }
 
         Destroy(gameObject);
@@ -33,12 +31,11 @@ public class Watch : MonoBehaviour
     {
         // You touch the clock and you become older
         
-        
         player.CurrentAge = player.CurrentAge switch
         {
-            AgeState.Baby   => AgeState.MidAge,
-            AgeState.MidAge => AgeState.Ded,
-            AgeState.Ded    => HandleDeath(player, "Senescence"),
+            AgeState.Youth => AgeState.Prime,
+            AgeState.Prime => AgeState.Aging,
+            AgeState.Aging => HandleDeath(player, "Senescence"),
             _ => player.CurrentAge
         };
     }
@@ -49,9 +46,9 @@ public class Watch : MonoBehaviour
        
         player.CurrentAge = player.CurrentAge switch
         {
-            AgeState.Ded    => AgeState.MidAge,
-            AgeState.MidAge => AgeState.Baby,
-            AgeState.Baby   => HandleDeath(player, "Chronological Regression"),
+            AgeState.Aging => AgeState.Prime,
+            AgeState.Prime => AgeState.Youth,
+            AgeState.Youth => HandleDeath(player, "Chronological Regression"),
             _ => player.CurrentAge
         };
     }
@@ -59,8 +56,6 @@ public class Watch : MonoBehaviour
     private AgeState HandleDeath(Player player, string reason)
     {
         player.Kill(reason);
-        player.DeathSound();
         return player.CurrentAge;
     }
-    
 }
