@@ -150,17 +150,8 @@ public class Player : MonoBehaviour
     {
         PlayerInput.GatherInput();
 
-        // Jump 0
-        if (PlayerInput.SpacePressed && _remainingJumps > 0)
-        {
-            _isJumpIntent = true;
-        }
-        
-        if (PlayerInput.SpaceReleased && Player_body.linearVelocity.y > 0 && _isJumping)
-        {
-            Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, Player_body.linearVelocity.y * JumpCancelForce);
-            _isJumping = false;
-        }
+        // Jump
+        if (PlayerInput.SpacePressed && _remainingJumps > 0) _isJumpIntent = true;
 
         // FIXME: Spaghetti code
 
@@ -204,7 +195,6 @@ public class Player : MonoBehaviour
             {
                 PlayerModel.flipX = false;
             }
-            
         }
         if ((CurrentAge == AgeState.Prime) || (CurrentAge == AgeState.Aging))
         {
@@ -254,33 +244,8 @@ public class Player : MonoBehaviour
         Player_body.linearVelocity = new Vector2(MaxSpeed * _smoothedInput, Player_body.linearVelocity.y);
         _isGrounded = Physics2D.OverlapCircle(_groundCheck.position, _groundRadius, _groundLayer);
 
-        // Jump 1
-        if (_isJumpIntent)
-        {
-            Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, JumpForce);
-            PlaySFX(Jump_Clip);
-            _remainingJumps -= 1;
-
-            _isJumping = true;
-            _jumpTimeCounter = 0f;
-            _isJumpIntent = false;
-        }
-
-        if (_isJumping)
-        {
-            _jumpTimeCounter += Time.fixedDeltaTime;
-
-            if ((PlayerInput.SpaceReleased && _jumpTimeCounter > 0.08f))
-            {
-                _isJumping = false;
-
-                if (Player_body.linearVelocity.y > MinJumpVelocity)
-                {
-                    Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, MinJumpVelocity);
-                }
-            }
-        }
-
+        // Jump
+        if (_isJumpIntent || _isJumping) HandleJumpPhysics();
 
         // FIXME
         Is_near_to_Lever = Physics2D.OverlapCircle(Lever_Check.position, Lever_radius, Lever_Layer);
@@ -374,6 +339,28 @@ public class Player : MonoBehaviour
         JumpForce = _selectedStats.JumpForce;
         JumpLimit = _selectedStats.JumpLimit;
         Smoothing = _selectedStats.Smoothing;
+    }
+    private void HandleJumpPhysics()
+    {
+        if (_isJumpIntent)
+        {
+            Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, JumpForce);
+            PlaySFX(Jump_Clip);
+            _remainingJumps--;
+            _isJumping = true;
+            _isJumpIntent = false;
+            return;
+        }
+
+        if (PlayerInput.SpaceReleased && Player_body.linearVelocity.y > MinJumpVelocity)
+        {
+            Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, Player_body.linearVelocity.y * JumpCancelForce);
+        }
+
+        if (Player_body.linearVelocity.y <= 0)
+        {
+            _isJumping = false;
+        }
     }
 
     public void DeathSound()
