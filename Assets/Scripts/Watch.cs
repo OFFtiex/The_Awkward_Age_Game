@@ -4,16 +4,16 @@ public class Watch : MonoBehaviour
 {
     public enum WatchType { Aging, Rejuvenating }
 
-    
     [SerializeField] private WatchType typeOfWatch;
-    
+    [SerializeField] private AudioClip Watch_Clip;
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!collision.CompareTag("Player")) return;
-
+        if (!collision.CompareTag("Player"))                    return;
         if (!collision.TryGetComponent<Player>(out var player)) return;
+        if (player == null)                                     return;
 
-        if (player == null) return;
+        player.PlaySFX(Watch_Clip);
 
         if (typeOfWatch == WatchType.Aging)
         {

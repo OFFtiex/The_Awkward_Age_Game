@@ -2,6 +2,7 @@ using System.Collections;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,15 +14,23 @@ public class Player : MonoBehaviour
     private Rigidbody2D Player_body;
 
     [Header("Player Movement")]
-    public float JumpForce { get; private set; }
     public float Smoothing { get; private set; }
-    //public float MaxSpeed { get; private set; }
-    [SerializeField] private float MaxSpeed;
+    public float MaxSpeed { get; private set; }
     public int JumpLimit { get; private set; }
 
-    private float smoothedInput;
-    public int RemainingJumps;
+    private float _smoothedInput;
+    
     float targetInput;
+
+    [Header("Jump Settings")]
+    public float JumpForce;          
+    public float JumpCancelForce = 0.3f;
+    public float MinJumpVelocity = 2f;
+
+    private float _jumpTimeCounter;
+    private int  _remainingJumps;
+    private bool _isJumpIntent;
+    private bool _isJumping;
 
     [Header("Feature sets")]
     private AgeStats _youthStats;
@@ -35,7 +44,7 @@ public class Player : MonoBehaviour
     private SpriteRenderer PlayerModel;
     private Animator animator;
 
-    [Header("Box")]//Чинить
+    [Header("Box")]//FIXME
     private readonly float Box_radius = 1f;
     [SerializeField] private LayerMask Box_Layer;
     private bool Is_near_to_Box;
@@ -52,6 +61,7 @@ public class Player : MonoBehaviour
     [SerializeField] private ParticleSystem walking_particles;
     [SerializeField] private ParticleSystem Death_particles;
     [SerializeField] private ParticleSystem Death_particles_Instance;
+    public GameObject PP;
     private AgeState _currentAge;
     private AgeStats _selectedStats => _currentAge switch
     {
@@ -77,16 +87,16 @@ public class Player : MonoBehaviour
     private bool _isDead;
     
 
-    //public bool isFlip; 
 
     [Header("SFX")]
-    [SerializeField] private AudioClip Jump_Clip;
-    [SerializeField] private AudioClip Watch_Clip;
     [SerializeField] private AudioClip Death_Clip_Young;
     [SerializeField] private AudioClip Death_Clip_Old;
+    [SerializeField] private AudioClip Jump_Clip;
+    
     [SerializeField] private AudioSource audio_source;
 
-    [Header("Lever")]//Чинить
+    // FIXME
+    [Header("Lever")]
     public float Lever_radius = 2f;
     public bool Is_near_to_Lever = false;
     public LayerMask Lever_Layer;
@@ -95,16 +105,12 @@ public class Player : MonoBehaviour
     public Transform[] children;
 
     [Header("Colliders")]
-    //public CapsuleCollider2D PlayerCollider => _cachedCollider;
     private CapsuleCollider2D _cachedCollider;
-    private Vector2 _youthOffset;
-    private Vector2 _youthSize;
 
     [Header ("UI Elements")]
     [SerializeField] private Image F_Image;
     [SerializeField] private float Current_Alpha_Value = 1;
 
-    public GameObject PP;
 
     //                                              Unity functions
 
@@ -118,7 +124,7 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         audio_source = GetComponent<AudioSource>();
 
-        _youthStats = new AgeStats(5f, 6.8f, 2, 50f, _youthSprite, new Vector2(0.78f, 0.95f), new Vector2(-0.11f, -0.02f));
+        _youthStats = new AgeStats(5f, 6.615f, 2, 50f, _youthSprite, new Vector2(0.78f, 0.95f), new Vector2(-0.11f, -0.02f));
         _primeStats = new AgeStats(5f, 8f, 1, 10f, _primeSprite, new Vector2(0.9f, 1.8f), new Vector2(-0.05f, -0.08f));
         _agingStats = new AgeStats(3f, 3f, 1, 3f, _agingSprite, new Vector2(0.9f, 1.5f), new Vector2(0f, 0f));
 
@@ -134,17 +140,30 @@ public class Player : MonoBehaviour
         F_Image = GameObject.FindWithTag("Fading_Screen").GetComponent<Image>();
         F_Image.color = new Color(0, 0, 0, 1);
 
+        // FIXME
         BB = GameObject.FindWithTag("Box");
         LL = GameObject.FindWithTag("Lever");
         PP = GameObject.FindWithTag("Particles_Walk");
-        //CurrentAge = AgeState.Youth;
 
     }
     void Update()
     {
         PlayerInput.GatherInput();
 
-        // Непроверенное
+        // Jump 0
+        if (PlayerInput.SpacePressed && _remainingJumps > 0)
+        {
+            _isJumpIntent = true;
+        }
+        
+        if (PlayerInput.SpaceReleased && Player_body.linearVelocity.y > 0 && _isJumping)
+        {
+            Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, Player_body.linearVelocity.y * JumpCancelForce);
+            _isJumping = false;
+        }
+
+        // FIXME: Spaghetti code
+
         // Fliping the sprite
         if (targetInput < 0f)
         {
@@ -189,36 +208,13 @@ public class Player : MonoBehaviour
         }
         if ((CurrentAge == AgeState.Prime) || (CurrentAge == AgeState.Aging))
         {
-            RemainingJumps = 0;
-            
+            _remainingJumps = 0;
         }
         if ((CurrentAge == AgeState.Youth))
         {
             Player_body.mass = 1f;
         }
-        if (_isGrounded)
-        {
-            if (PP != null) { PP.SetActive(true); }
-            RemainingJumps = JumpLimit;
-            if (PlayerInput.JumpPressed)
-            {
-                Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, JumpForce);
-                PlaySFX(Jump_Clip);
-            }
-        }
-        else 
-        {
-            if (PP != null) { PP.SetActive(false); }
-        }
-        if ((RemainingJumps != 0) && (_isGrounded == false))
-        {
-            if (PlayerInput.JumpPressed)
-            {
-                Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, JumpForce);
-                PlaySFX(Jump_Clip);
-                RemainingJumps -= 1;
-            }
-        }
+        
         if (Is_near_to_Box  && CurrentAge == AgeState.Prime) 
         {
             Player_body.mass = 1000f;
@@ -230,14 +226,14 @@ public class Player : MonoBehaviour
             {
                 if (Box_Check.transform.position.x < BB.transform.position.x)
                 {
-                    if (smoothedInput < 0)
+                    if (_smoothedInput < 0)
                     {
                         BB.transform.position = new Vector2(Box_Check.transform.position.x + 1.5f, Box_Check.transform.position.y);
                     }
                 }
                 else if (Box_Check.transform.position.x > BB.transform.position.x)
                 {
-                    if (smoothedInput > 0)
+                    if (_smoothedInput > 0)
                     {
                         BB.transform.position = new Vector2(Box_Check.transform.position.x - 1.5f, Box_Check.transform.position.y);
                     }
@@ -254,11 +250,39 @@ public class Player : MonoBehaviour
         if (PlayerInput.AKeyHeld) targetInput = -1f;
 
         SetAnimation(targetInput);
-        smoothedInput = Mathf.MoveTowards(smoothedInput, targetInput, Smoothing * Time.deltaTime);
-        Player_body.linearVelocity = new Vector2(MaxSpeed * smoothedInput, Player_body.linearVelocity.y);
+        _smoothedInput = Mathf.MoveTowards(_smoothedInput, targetInput, Smoothing * Time.deltaTime);
+        Player_body.linearVelocity = new Vector2(MaxSpeed * _smoothedInput, Player_body.linearVelocity.y);
         _isGrounded = Physics2D.OverlapCircle(_groundCheck.position, _groundRadius, _groundLayer);
 
-        // Непроверенное
+        // Jump 1
+        if (_isJumpIntent)
+        {
+            Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, JumpForce);
+            PlaySFX(Jump_Clip);
+            _remainingJumps -= 1;
+
+            _isJumping = true;
+            _jumpTimeCounter = 0f;
+            _isJumpIntent = false;
+        }
+
+        if (_isJumping)
+        {
+            _jumpTimeCounter += Time.fixedDeltaTime;
+
+            if ((PlayerInput.SpaceReleased && _jumpTimeCounter > 0.08f))
+            {
+                _isJumping = false;
+
+                if (Player_body.linearVelocity.y > MinJumpVelocity)
+                {
+                    Player_body.linearVelocity = new Vector2(Player_body.linearVelocity.x, MinJumpVelocity);
+                }
+            }
+        }
+
+
+        // FIXME
         Is_near_to_Lever = Physics2D.OverlapCircle(Lever_Check.position, Lever_radius, Lever_Layer);
         Is_near_to_Box = Physics2D.OverlapCircle(Box_Check.position, Box_radius, Box_Layer);
 
@@ -276,6 +300,7 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other) // changes current "Main" box
     {
+        // FIXME
         if (other.CompareTag("Box") && other.transform.parent != null)
         {
             BB = other.transform.parent.gameObject;
@@ -285,18 +310,25 @@ public class Player : MonoBehaviour
             LL = other.transform.parent.gameObject;
             children = LL.GetComponentsInChildren<Transform>();
         }
-        if (other.CompareTag("Watch"))
-        {
-            PlaySFX(Watch_Clip);
-        }
     }
-
     
     private void OnCollisionEnter2D(Collision2D collision)
-    {
+    {   
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ground_Layer"))
+        {
+            _remainingJumps = JumpLimit;
+            //if (PP != null) { PP.SetActive(true); }
+        }
         if (collision.gameObject.CompareTag("Damage_Pike"))
         {
             Kill("Was Pierced by Thorns");
+        }
+    }
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ground_Layer"))
+        {
+            //if (PP != null) { PP.SetActive(false); }
         }
     }
 
@@ -326,31 +358,7 @@ public class Player : MonoBehaviour
 
         animator.Play(animName);
     }
-    /*
-    private void UpdatePlayerCollider()//Поправить
-    {
-        if (_cachedCollider == null) return;
 
-        switch (CurrentAge)
-        {
-            case AgeState.Youth:
-                _cachedCollider.size = _youthSize;
-                _cachedCollider.offset = _youthOffset;
-                break;
-
-            case AgeState.Prime:
-                float midHeight = _youthSize.y * 1.2f;
-                _cachedCollider.size = new Vector2(_youthSize.x, midHeight);
-                _cachedCollider.offset = new Vector2(_youthOffset.x, _youthOffset.y -0.30f );
-                break;
-
-            case AgeState.Aging:
-                float agingHeight = _youthSize.y * 1.2f;
-                _cachedCollider.size = new Vector2(_youthSize.x, agingHeight);
-                _cachedCollider.offset = new Vector2(_youthOffset.x, _youthOffset.y - (agingHeight - _youthSize.y) / 2f);
-                break;
-        }
-    }*/
     private void UpdatePlayerCollider()
     {
         _cachedCollider.size = _selectedStats.ColliderSize;
