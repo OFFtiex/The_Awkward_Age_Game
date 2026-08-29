@@ -12,7 +12,8 @@ public class Player : MonoBehaviour
     [Header("Player Movement")]
     public float Smoothing { get; private set; }
     public float MaxSpeed { get; private set; }
-    public int JumpLimit { get; private set; }
+    // int JumpLimit { get; private set; }
+    public int JumpLimit;
 
     private float _smoothedInput;
     
@@ -21,10 +22,10 @@ public class Player : MonoBehaviour
     [Header("Jump Settings")]
     private const float JumpCancelForce = 0.3f;
     private const float MinJumpVelocity = 2f;
-    private float JumpForce;          
-    
+    private float JumpForce;
 
-    private int  _remainingJumps;
+    //private int _remainingJumps;
+    public int  _remainingJumps;
     private bool _isJumpIntent;
     private bool _isJumping;
 
@@ -121,8 +122,8 @@ public class Player : MonoBehaviour
         audio_source = GetComponent<AudioSource>();
 
         _youthStats = new AgeStats(5f, 6.615f, 2, 50f, _youthSprite, new Vector2(0.78f, 0.95f), new Vector2(-0.11f, -0.02f));
-        _primeStats = new AgeStats(5f, 8f, 1, 10f, _primeSprite, new Vector2(0.9f, 1.8f), new Vector2(-0.05f, -0.08f));
-        _agingStats = new AgeStats(3f, 3f, 1, 3f, _agingSprite, new Vector2(0.9f, 1.5f), new Vector2(0f, 0f));
+        _primeStats = new AgeStats(5f, 8f,     1, 10f, _primeSprite, new Vector2(0.9f, 1.8f),   new Vector2(-0.05f, -0.08f));
+        _agingStats = new AgeStats(3f, 3f,     1, 3f,  _agingSprite, new Vector2(0.9f, 1.5f),   new Vector2(0f, 0f));
 
         _currentAge = AgeState.Youth;
 
@@ -192,16 +193,12 @@ public class Player : MonoBehaviour
                 PlayerModel.flipX = false;
             }
         }
-        if ((CurrentAge == AgeState.Prime) || (CurrentAge == AgeState.Aging))
-        {
-            _remainingJumps = 0;
-        }
         if ((CurrentAge == AgeState.Youth))
         {
             Player_body.mass = 1f;
         }
         
-        if (Is_near_to_Box  && CurrentAge == AgeState.Prime) 
+        if (Is_near_to_Box && CurrentAge == AgeState.Prime) 
         {
             Player_body.mass = 1000f;
             if ((Box_Check.transform.position.y > BB.transform.position.y + 1))
@@ -340,6 +337,7 @@ public class Player : MonoBehaviour
         JumpForce = _selectedStats.JumpForce;
         JumpLimit = _selectedStats.JumpLimit;
         Smoothing = _selectedStats.Smoothing;
+        _remainingJumps = JumpLimit;
     }
     private void HandleJumpPhysics()
     {

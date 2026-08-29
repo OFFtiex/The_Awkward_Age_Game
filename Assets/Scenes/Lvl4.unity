@@ -6420,7 +6420,7 @@ PrefabInstance:
       objectReference: {fileID: 551604512}
     - target: {fileID: 6352163650412328852, guid: c1cd8b8197c070044a6bc75d35aafca6, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10.31599
+      value: -10.22599
       objectReference: {fileID: 0}
     - target: {fileID: 6352163650412328852, guid: c1cd8b8197c070044a6bc75d35aafca6, type: 3}
       propertyPath: m_LocalPosition.y
@@ -10392,6 +10392,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 179077952}
     - target: {fileID: 3841979385954766950, guid: 8721d77fad103e64fb9746aba74e2dc0, type: 3}
+      propertyPath: _groundCheck
+      value: 
+      objectReference: {fileID: 2011569403}
+    - target: {fileID: 3841979385954766950, guid: 8721d77fad103e64fb9746aba74e2dc0, type: 3}
       propertyPath: Death_Clip_Old
       value: 
       objectReference: {fileID: 8300000, guid: a105a9392699fad47b0822eb29b98a98, type: 3}
@@ -10403,9 +10407,13 @@ PrefabInstance:
       propertyPath: Death_Clip_Young
       value: 
       objectReference: {fileID: 8300000, guid: 33906a299f24d18429707d121ab61a0f, type: 3}
+    - target: {fileID: 3841979385954766950, guid: 8721d77fad103e64fb9746aba74e2dc0, type: 3}
+      propertyPath: _groundLayer.m_Bits
+      value: 128
+      objectReference: {fileID: 0}
     - target: {fileID: 6334117529691171547, guid: 8721d77fad103e64fb9746aba74e2dc0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10.46
+      value: -10.37
       objectReference: {fileID: 0}
     - target: {fileID: 6334117529691171547, guid: 8721d77fad103e64fb9746aba74e2dc0, type: 3}
       propertyPath: m_LocalPosition.y
