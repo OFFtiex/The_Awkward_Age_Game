@@ -1,9 +1,8 @@
-using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine;
 
 public class Tutorial : MonoBehaviour
 {
-
     public GameObject tmp;
     public Image tutorial;
 
@@ -17,7 +16,6 @@ public class Tutorial : MonoBehaviour
 
     private void Update(){
         if(tmp == null && toFadeIn){
-            Debug.Log(transparencyValue);
             transparencyValue += Time.deltaTime * 2f;             
             tutorial.color = new Color(1, 1, 1, transparencyValue);
             if (tutorial.color.a >= 1f){

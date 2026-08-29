@@ -1,7 +1,7 @@
 //using System.Collections;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine;
 
 public enum AgeState    {   Youth, Prime, Aging   }
 
@@ -51,7 +51,6 @@ public class Player : MonoBehaviour
     [Header("Ground")]
     [SerializeField] private Transform _groundCheck;
     [SerializeField] private LayerMask _groundLayer;
-    private readonly float _groundRadius = 0.2f;
     private bool _isGrounded;
 
     [Header("Player additional")]
@@ -236,7 +235,7 @@ public class Player : MonoBehaviour
         
         _smoothedInput = Mathf.MoveTowards(_smoothedInput, targetInput, Smoothing * Time.deltaTime);
         Player_body.linearVelocity = new Vector2(MaxSpeed * _smoothedInput, Player_body.linearVelocity.y);
-        _isGrounded = Physics2D.OverlapCircle(_groundCheck.position, _groundRadius, _groundLayer);
+        
 
         // Jump
         if (_isJumpIntent || _isJumping) HandleJumpPhysics();
@@ -278,6 +277,7 @@ public class Player : MonoBehaviour
             if (collision.contacts[0].normal.y > 0.7f)
             {
                 _remainingJumps = JumpLimit;
+                _isGrounded = true;
                 if (PP != null) { PP.SetActive(true); }//
                 return;
             }
@@ -291,6 +291,7 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground_Layer"))
         {
+            _isGrounded = false;
             if (PP != null) { PP.SetActive(false); }//
         }
     }
@@ -312,19 +313,19 @@ public class Player : MonoBehaviour
         {
             (false, _, false, false, false)  => $"{age}_Fall_Animation",
             (false, _, false, true, false)   => $"{age}_Umbrella_Animation",
-            (true, true, _, false, false )   => $"{age}_Idle0_Animation",
+            (true, true,  _, false, false)   => $"{age}_Idle0_Animation",
             (false, _, true, false, false)   => $"{age}_Jump_Animation",
             (true, false, _, false, false)   => $"{age}_Run_Animation",
             (true, _, false, false, true)    => $"{age}_Int_Animation",
             _                                => $"{age}_Idle0_Animation",
         };
 
-        animator.Play(animName);
+        animator.Play(animName, 0);
     }
 
     private void UpdatePlayerCollider()
     {
-        _cachedCollider.size = _selectedStats.ColliderSize;
+        _cachedCollider.size   = _selectedStats.ColliderSize;
         _cachedCollider.offset = _selectedStats.ColliderOffset;
     }
     private void UpdatePlayerVisual()
