@@ -400,6 +400,7 @@ public class Player : MonoBehaviour
         _cachedCollider.enabled = false;
         if (TryGetComponent<Rigidbody2D>(out var rb)) rb.simulated = false;
     }
+
     // <<< Переделать корутинами
     private void LoadSceneDelay()
     {
