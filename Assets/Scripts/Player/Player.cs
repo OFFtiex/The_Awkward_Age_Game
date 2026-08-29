@@ -23,11 +23,11 @@ public class Player : MonoBehaviour
     float targetInput;
 
     [Header("Jump Settings")]
-    public float JumpForce;          
-    public float JumpCancelForce = 0.3f;
-    public float MinJumpVelocity = 2f;
+    private const float JumpCancelForce = 0.3f;
+    private const float MinJumpVelocity = 2f;
+    private float JumpForce;          
+    
 
-    private float _jumpTimeCounter;
     private int  _remainingJumps;
     private bool _isJumpIntent;
     private bool _isJumping;
@@ -234,12 +234,13 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
+        SetAnimation();
+
         // Moving
         targetInput = 0f;
         if (PlayerInput.DKeyHeld) targetInput = 1f;
         if (PlayerInput.AKeyHeld) targetInput = -1f;
-
-        SetAnimation(targetInput);
+        
         _smoothedInput = Mathf.MoveTowards(_smoothedInput, targetInput, Smoothing * Time.deltaTime);
         Player_body.linearVelocity = new Vector2(MaxSpeed * _smoothedInput, Player_body.linearVelocity.y);
         _isGrounded = Physics2D.OverlapCircle(_groundCheck.position, _groundRadius, _groundLayer);
@@ -301,7 +302,7 @@ public class Player : MonoBehaviour
     //                                              Custom functions
 
 
-    private void SetAnimation(float targetInput)
+    private void SetAnimation()
     {
         string age = CurrentAge switch
         {
