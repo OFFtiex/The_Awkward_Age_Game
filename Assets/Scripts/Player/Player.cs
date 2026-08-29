@@ -282,8 +282,12 @@ public class Player : MonoBehaviour
     {   
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground_Layer"))
         {
-            _remainingJumps = JumpLimit;
-            //if (PP != null) { PP.SetActive(true); }
+            if (collision.contacts[0].normal.y > 0.7f)
+            {
+                _remainingJumps = JumpLimit;
+                if (PP != null) { PP.SetActive(true); }//
+                return;
+            }
         }
         if (collision.gameObject.CompareTag("Damage_Pike"))
         {
@@ -294,7 +298,7 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground_Layer"))
         {
-            //if (PP != null) { PP.SetActive(false); }
+            if (PP != null) { PP.SetActive(false); }//
         }
     }
 
