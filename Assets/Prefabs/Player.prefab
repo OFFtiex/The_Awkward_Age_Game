@@ -107,6 +107,8 @@ GameObject:
   - component: {fileID: 3927505030262958996}
   - component: {fileID: 1770683104388329394}
   - component: {fileID: 6525635597548521806}
+  - component: {fileID: 2585555790460907784}
+  - component: {fileID: 1824864094769781478}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -204,29 +206,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 913657c894a85834380554787c148494, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  Player_body: {fileID: 0}
-  Player_model: {fileID: 0}
-  babySprite: {fileID: 0}
-  midAgeSprite: {fileID: 21300000, guid: 76c125c2f168d354dbc3bb1ce93e5863, type: 3}
-  dedSprite: {fileID: 21300000, guid: 0c7875721942b6548ab42991f5871be2, type: 3}
-  Box_radius: 2
+  JumpLimit: 0
+  _remainingJumps: 0
+  _youthSprite: {fileID: 0}
+  _primeSprite: {fileID: 0}
+  _agingSprite: {fileID: 0}
   Box_Layer:
     serializedVersion: 2
     m_Bits: 64
-  Is_near_to_Box: 0
   Box_Check: {fileID: 8128528775150305012}
   BB: {fileID: 6939707907371880342}
-  Ground_radius: 0.5
-  Ground_Layer:
+  _groundCheck: {fileID: 0}
+  _groundLayer:
     serializedVersion: 2
     m_Bits: 128
-  Is_Grounded: 0
-  Ground_Check: {fileID: 1781910397528341421}
-  ExtraJumpValue: 1
-  ExtraJump: 0
-  isDead: 0
   walking_particles: {fileID: 5459704610196134570, guid: a27cb2e9ea729fe4e98121113cfacad8, type: 3}
   Death_particles: {fileID: 0}
+  Death_particles_Instance: {fileID: 0}
+  PP: {fileID: 0}
+  Death_Clip_Young: {fileID: 0}
+  Death_Clip_Old: {fileID: 0}
+  Jump_Clip: {fileID: 0}
+  audio_source: {fileID: 0}
   Lever_radius: 2
   Is_near_to_Lever: 0
   Lever_Layer:
@@ -235,7 +236,6 @@ MonoBehaviour:
   Lever_Check: {fileID: 4120283603499919744}
   LL: {fileID: 0}
   children: []
-  ageState: 0
   F_Image: {fileID: 0}
   Current_Alpha_Value: 1
 --- !u!50 &3927505030262958996
@@ -321,6 +321,105 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1, y: 1}
+  m_Offset: {x: -0.089562215, y: 0}
+  m_Size: {x: 0.8860119, y: 1}
   m_Direction: 0
+--- !u!68 &2585555790460907784
+EdgeCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8639750860403174577}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 6200000, guid: 675e91513f56f124dac15ff0ea297a9d, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_EdgeRadius: 0
+  m_Points:
+  - {x: 0.21175133, y: 0.39396283}
+  - {x: 0.25662562, y: 0.3606059}
+  - {x: 0.25662562, y: 0.36810577}
+  - {x: 0.35061952, y: 0.2092437}
+  - {x: 0.3724861, y: 0.07128565}
+  - {x: 0.37366757, y: -0.019731224}
+  - {x: 0.3685105, y: -0.12138635}
+  - {x: 0.32446525, y: -0.2689845}
+  - {x: 0.24228886, y: -0.35996726}
+  m_AdjacentStartPoint: {x: 0, y: 0}
+  m_AdjacentEndPoint: {x: 0, y: 0}
+  m_UseAdjacentStartPoint: 0
+  m_UseAdjacentEndPoint: 0
+--- !u!68 &1824864094769781478
+EdgeCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8639750860403174577}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 6200000, guid: 675e91513f56f124dac15ff0ea297a9d, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_EdgeRadius: 0
+  m_Points:
+  - {x: -0.40660936, y: -0.3822906}
+  - {x: -0.50000036, y: -0.27580783}
+  - {x: -0.52754813, y: -0.19498385}
+  - {x: -0.5456083, y: -0.07177147}
+  - {x: -0.5508313, y: 0.057879075}
+  - {x: -0.52490914, y: 0.20909123}
+  - {x: -0.44705558, y: 0.34985256}
+  - {x: -0.34966856, y: 0.42942244}
+  m_AdjacentStartPoint: {x: 0, y: 0}
+  m_AdjacentEndPoint: {x: 0, y: 0}
+  m_UseAdjacentStartPoint: 0
+  m_UseAdjacentEndPoint: 0

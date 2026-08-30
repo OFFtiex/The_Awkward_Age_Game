@@ -15,7 +15,7 @@ public class Teleport : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player") && _logic != null && Time.time >= s_nextTeleportTime)
+        if (other.CompareTag("Player")  && _logic != null && Time.time >= s_nextTeleportTime)
         {
             s_nextTeleportTime = Time.time + 0.5f;
             _logic.Execute(other.gameObject);
