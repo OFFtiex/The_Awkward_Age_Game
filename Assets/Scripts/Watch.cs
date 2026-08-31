@@ -4,14 +4,22 @@ public class Watch : MonoBehaviour
 {
     public enum WatchType { Aging, Rejuvenating }
 
+    private bool _isTriggered = false;
+
     [SerializeField] private WatchType typeOfWatch;
     [SerializeField] private AudioClip Watch_Clip;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (_isTriggered) return;
         if (!collision.CompareTag("Player"))                    return;
         if (!collision.TryGetComponent<Player>(out var player)) return;
         if (player == null)                                     return;
+
+        if (TryGetComponent<Collider2D>(out var myCollider))
+        {
+            _isTriggered = true;
+        }
 
         player.PlaySFX(Watch_Clip);
 

@@ -12,20 +12,18 @@ public class Player : MonoBehaviour
     [Header("Player Movement")]
     public float Smoothing { get; private set; }
     public float MaxSpeed { get; private set; }
-    // int JumpLimit { get; private set; }
-    public int JumpLimit;
+    public int JumpLimit { get; private set; }
 
     private float _smoothedInput;
     
-    float targetInput;
+    private float _targetInput;
 
     [Header("Jump Settings")]
     private const float JumpCancelForce = 0.3f;
     private const float MinJumpVelocity = 2f;
     private float JumpForce;
 
-    //private int _remainingJumps;
-    public int  _remainingJumps;
+    private int  _remainingJumps;
     private bool _isJumpIntent;
     private bool _isJumping;
 
@@ -58,7 +56,7 @@ public class Player : MonoBehaviour
     [SerializeField] private ParticleSystem Death_particles;
     [SerializeField] private ParticleSystem Death_particles_Instance;
     public GameObject PP;
-    private AgeState _currentAge;
+    private AgeState _currentAge = AgeState.Youth;
     private AgeStats _selectedStats => _currentAge switch
     {
         AgeState.Prime => _primeStats,
@@ -124,7 +122,7 @@ public class Player : MonoBehaviour
         _primeStats = new AgeStats(5f, 8f,     1, 10f, _primeSprite, new Vector2(0.9f, 1.8f),   new Vector2(-0.05f, -0.08f));
         _agingStats = new AgeStats(3f, 3f,     1, 3f,  _agingSprite, new Vector2(0.9f, 1.5f),   new Vector2(0f, 0f));
 
-        _currentAge = AgeState.Youth;
+        //_currentAge = AgeState.Youth;
 
         UpdatePlayerCollider();
         UpdatePlayerVisual();
@@ -152,7 +150,7 @@ public class Player : MonoBehaviour
         // FIXME: Spaghetti code
 
         // Fliping the sprite
-        if (targetInput < 0f)
+        if (_targetInput < 0f)
         {
             PlayerModel.flipX = true;
         }
@@ -229,11 +227,11 @@ public class Player : MonoBehaviour
         SetAnimation();
 
         // Moving
-        targetInput = 0f;
-        if (PlayerInput.DKeyHeld) targetInput = 1f;
-        if (PlayerInput.AKeyHeld) targetInput = -1f;
+        _targetInput = 0f;
+        if (PlayerInput.DKeyHeld) _targetInput = 1f;
+        if (PlayerInput.AKeyHeld) _targetInput = -1f;
         
-        _smoothedInput = Mathf.MoveTowards(_smoothedInput, targetInput, Smoothing * Time.deltaTime);
+        _smoothedInput = Mathf.MoveTowards(_smoothedInput, _targetInput, Smoothing * Time.deltaTime);
         Player_body.linearVelocity = new Vector2(MaxSpeed * _smoothedInput, Player_body.linearVelocity.y);
         
 
@@ -309,7 +307,7 @@ public class Player : MonoBehaviour
             _ => "Parent"
         };
 
-        string animName = (_isGrounded, targetInput == 0, Player_body.linearVelocityY > 0, _isUmbrella, PlayerInput.EKeyHeld) switch
+        string animName = (_isGrounded, _targetInput == 0, Player_body.linearVelocityY > 0, _isUmbrella, PlayerInput.EKeyHeld) switch
         {
             (false, _, false, false, false)  => $"{age}_Fall_Animation",
             (false, _, false, true, false)   => $"{age}_Umbrella_Animation",

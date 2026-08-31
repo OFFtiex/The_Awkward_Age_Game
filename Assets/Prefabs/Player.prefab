@@ -206,11 +206,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 913657c894a85834380554787c148494, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  JumpLimit: 0
-  _remainingJumps: 0
-  _youthSprite: {fileID: 0}
-  _primeSprite: {fileID: 0}
-  _agingSprite: {fileID: 0}
+  _youthSprite: {fileID: 21300000, guid: 3588a69f840a8554ebdb4248b4aebea0, type: 3}
+  _primeSprite: {fileID: 21300000, guid: 2193836b1985b384dbc07f7cc1b28798, type: 3}
+  _agingSprite: {fileID: 21300000, guid: baf9ff28b28835c4e9a5ae32d5fc8cfe, type: 3}
   Box_Layer:
     serializedVersion: 2
     m_Bits: 64
